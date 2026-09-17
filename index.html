@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>张小衡 · 个人主页</title>
+<style>
+  :root {
+    --wine: #8a1e3f;          /* 酒红 */
+    --wine-dark: #6d1730;
+    --wine-soft: #a94a68;     /* 浅酒红点缀 */
+    --cream: #fbf7f4;         /* 暖白背景 */
+    --white: #ffffff;
+    --ink: #2b2326;           /* 正文深色 */
+    --muted: #8a7d80;         /* 次要文字 */
+    --line: #ece4e2;          /* 分隔线 */
+    --radius: 16px;
+    --shadow: 0 8px 24px rgba(138, 30, 63, 0.08);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+                 "Microsoft YaHei", sans-serif;
+    background: var(--cream);
+    color: var(--ink);
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap {
+    max-width: 1320px;
+    margin: 0 auto;
+    padding: 36px 28px 64px;
+  }
+
+  /* ---------- 头部 ---------- */
+  .card {
+    background: var(--white);
+    border: 1.5px solid var(--wine-soft);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 26px 24px;
+    margin-bottom: 20px;
+    transition: transform .2s ease, box-shadow .2s ease;
+  }
+  .card:hover {
+    transform: scale(1.015) translateY(-3px);
+    box-shadow: 0 14px 30px rgba(138, 30, 63, 0.15);
+  }
+
+  /* ---------- 左侧导航 ---------- */
+  .nav-side {
+    position: fixed;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    z-index: 100;
+  }
+  .nav-btn {
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--wine-dark);
+    background: var(--white);
+    border: 1.5px solid var(--wine-soft);
+    border-radius: 10px;
+    box-shadow: var(--shadow);
+    cursor: pointer;
+    user-select: none;
+    transition: transform .2s ease, box-shadow .2s ease, background .2s ease, color .2s ease;
+  }
+  .nav-btn:hover {
+    transform: scale(1.08);
+    background: var(--wine);
+    color: #fff;
+    box-shadow: 0 10px 22px rgba(138, 30, 63, 0.25);
+  }
+
+  #works, #guestbook { scroll-margin-top: 24px; }
+
+  .hero {
+    display: flex;
+    align-items: center;
+    gap: 30px;
+  }
+
+  .avatar {
+    width: 142px;
+    height: 142px;
+    border-radius: 50%;
+    flex: 0 0 auto;
+    padding: 3px;
+    background: var(--wine-soft);
+    box-shadow: 0 6px 18px rgba(138, 30, 63, 0.3);
+  }
+  .avatar img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+    display: block;
+    border: 3px solid #fff;
+  }
+
+  .hero h1 {
+    font-size: 37px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    line-height: 1.1;
+    color: var(--wine);
+  }
+  .hero .tagline {
+    margin-top: 10px;
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--ink);
+    opacity: .85;
+    white-space: nowrap;
+  }
+  .hero .hello {
+    margin-top: 14px;
+    font-size: 15px;
+    color: var(--muted);
+    max-width: 420px;
+  }
+
+  .badges { margin-top: 20px; display: flex; flex-wrap: wrap; gap: 8px; }
+  .badge {
+    font-size: 12.5px;
+    color: var(--muted);
+    background: var(--cream);
+    border: 1px solid var(--line);
+    padding: 4px 12px;
+    border-radius: 999px;
+  }
+
+  /* ---------- 聊天入口强调 ---------- */
+  .chat-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+  .chat-head h2 { margin-bottom: 0; }
+  .status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12.5px;
+    color: var(--wine);
+    background: #fbf0f3;
+    border: 1px solid #f0d6dd;
+    padding: 4px 10px;
+    border-radius: 999px;
+    white-space: nowrap;
+  }
+  .status .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #3aa76d;
+    box-shadow: 0 0 0 2px rgba(58, 167, 109, 0.25);
+  }
+
+  /* ---------- 作品展示 ---------- */
+  .works-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 28px;
+    margin-top: 4px;
+  }
+  .work-card {
+    background: var(--white);
+    border: 1.5px solid var(--wine-soft);
+    border-radius: 18px;
+    padding: 20px 20px 22px;
+    box-shadow: var(--shadow);
+    transition: transform .2s ease, box-shadow .2s ease;
+  }
+  .work-card:nth-child(1) { transform: rotate(-2.5deg) translateY(6px); }
+  .work-card:nth-child(2) { transform: rotate(0deg); }
+  .work-card:nth-child(3) { transform: rotate(2.5deg) translateY(6px); }
+  .work-card:hover {
+    transform: rotate(0deg) translateY(-4px);
+    box-shadow: 0 12px 28px rgba(138, 30, 63, 0.16);
+  }
+  .work-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: .5px;
+    color: var(--wine-dark);
+    margin-bottom: 14px;
+  }
+  .work-badge .dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: var(--wine);
+  }
+  .work-card:nth-child(2) .work-badge .dot { background: var(--wine-dark); }
+  .work-card:nth-child(3) .work-badge .dot { background: var(--wine-soft); }
+  .work-thumb {
+    aspect-ratio: 1 / 1;
+    border-radius: 14px;
+    border: 1.5px dashed var(--wine-soft);
+    background: linear-gradient(160deg, #fdf9f6, var(--cream));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--muted);
+    font-size: 14px;
+    letter-spacing: 2px;
+  }
+  .work-name {
+    margin-top: 14px;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--ink);
+  }
+  .work-name .ph { color: var(--muted); font-weight: 400; }
+
+  /* ---------- 留言板 ---------- */
+  .gb-form { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
+  .gb-form input,
+  .gb-form textarea {
+    width: 100%; padding: 10px 12px; font-size: 14px;
+    border: 1px solid var(--line); border-radius: 10px; outline: none;
+    background: #fff; color: var(--ink); font-family: inherit; resize: vertical;
+  }
+  .gb-form input:focus,
+  .gb-form textarea:focus { border-color: var(--wine); }
+  .gb-form button {
+    align-self: flex-end; padding: 9px 18px; font-size: 14px; font-weight: 600;
+    border: none; border-radius: 10px; background: var(--wine); color: #fff; cursor: pointer;
+    transition: background .15s;
+  }
+  .gb-form button:hover { background: var(--wine-dark); }
+  .gb-list { display: flex; flex-direction: column; gap: 12px; max-height: 240px; overflow-y: auto; }
+  .gb-item {
+    background: var(--cream); border: 1px solid var(--line);
+    border-radius: 12px; padding: 10px 14px;
+  }
+  .gb-item .gb-meta {
+    font-size: 12px; color: var(--muted);
+    display: flex; justify-content: space-between; gap: 10px; margin-bottom: 4px;
+  }
+  .gb-item .gb-name { color: var(--wine); font-weight: 600; }
+  .gb-item p { font-size: 14px; word-break: break-word; }
+  .gb-empty { text-align: center; color: var(--muted); font-size: 14px; padding: 16px 0; }
+
+  /* ---------- 区块标题 ---------- */
+  .card h2 {
+    font-size: 16px;
+    color: var(--wine-dark);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  .card h2::before {
+    content: "";
+    width: 4px;
+    height: 16px;
+    border-radius: 2px;
+    background: var(--wine);
+  }
+
+  .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+  .info-item h3 {
+    font-size: 13px;
+    color: var(--muted);
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+  .info-item p { font-size: 15px; }
+
+  .tag-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
+  .tag {
+    font-size: 13px;
+    padding: 3px 10px;
+    background: var(--cream);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    color: var(--ink);
+  }
+
+  /* ---------- 聊天区 ---------- */
+  #chat .chat-box {
+    height: 340px;
+    overflow-y: auto;
+    padding: 8px 2px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    scroll-behavior: smooth;
+  }
+
+  .msg {
+    max-width: 84%;
+    padding: 10px 14px;
+    border-radius: 14px;
+    font-size: 15px;
+    line-height: 1.55;
+  }
+  .msg.bot {
+    align-self: flex-start;
+    background: var(--cream);
+    border: 1px solid var(--line);
+    border-bottom-left-radius: 4px;
+    color: var(--ink);
+  }
+  .msg.user {
+    align-self: flex-end;
+    background: var(--wine);
+    color: #fff;
+    border-bottom-right-radius: 4px;
+  }
+  .msg .who {
+    font-size: 11px;
+    color: var(--muted);
+    display: block;
+    margin-bottom: 3px;
+  }
+  .msg.user .who { color: rgba(255,255,255,0.8); }
+
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0 14px; }
+  .chip {
+    font-size: 13px;
+    padding: 6px 12px;
+    border-radius: 999px;
+    border: 1px solid var(--wine-soft);
+    color: var(--wine);
+    background: #fff;
+    cursor: pointer;
+    transition: all .15s;
+  }
+  .chip:hover { background: var(--wine); color: #fff; }
+
+  .input-row { display: flex; gap: 8px; }
+  .input-row input {
+    flex: 1;
+    padding: 12px 14px;
+    font-size: 15px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    outline: none;
+    background: #fff;
+    color: var(--ink);
+  }
+  .input-row input:focus { border-color: var(--wine); }
+  .input-row button {
+    padding: 12px 20px;
+    font-size: 15px;
+    border: none;
+    border-radius: 10px;
+    background: var(--wine);
+    color: #fff;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background .15s;
+  }
+  .input-row button:hover { background: var(--wine-dark); }
+
+  footer {
+    text-align: center;
+    color: var(--muted);
+    font-size: 13px;
+    margin-top: 26px;
+  }
+
+  /* ---------- 双栏布局 ---------- */
+  .columns {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    gap: 24px;
+    align-items: stretch;
+    margin-bottom: 26px;
+  }
+  .col-left,
+  .col-right {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  .columns .card { height: auto; }
+  .col-left .card:last-child { flex: 1; }
+  .col-left .card,
+  .col-right .card { margin-bottom: 0; }
+  .col-right { height: 100%; }
+  .col-right .card#chat {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+  }
+  .col-right #chatBox {
+    height: 400px;
+    max-height: 56vh;
+    overflow-y: auto;
+  }
+
+  /* ---------- 移动端 ---------- */
+  @media (max-width: 900px) {
+    .columns { grid-template-columns: 1fr; }
+    .col-right { height: auto; }
+    .col-right #chatBox { height: 56vh; max-height: 480px; }
+    .works-grid { grid-template-columns: 1fr; max-width: 480px; margin-left: auto; margin-right: auto; }
+  }
+  @media (max-width: 560px) {
+    .wrap { padding: 18px 14px 40px; padding-left: 52px; }
+    .nav-side { left: 6px; gap: 8px; }
+    .nav-btn { width: 40px; height: 40px; font-size: 13px; border-radius: 8px; }
+    .hero { flex-direction: column; text-align: center; gap: 12px; }
+    .hero h1 { font-size: 24px; }
+    .hero .hello { margin-left: auto; margin-right: auto; }
+    .badges { justify-content: center; }
+    .chat-head { flex-direction: column; align-items: flex-start; }
+    .info-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+  <!-- 左侧导航 -->
+  <nav class="nav-side">
+    <button class="nav-btn" data-target="home">主页</button>
+    <button class="nav-btn" data-target="works">作品</button>
+    <button class="nav-btn" data-target="guestbook">留言</button>
+  </nav>
+
+  <div class="wrap">
+    <div class="columns">
+      <div class="col-left">
+
+    <!-- 头像 + 名字 + 一句话 -->
+    <section class="card">
+      <div class="hero">
+        <div class="avatar"><img src="avatar.jpg" alt="张小衡" /></div>
+        <div>
+          <h1>张小衡</h1>
+          <p class="tagline">一个正在学习用 AI 做产品的大学生</p>
+          <p class="hello">嗨，欢迎来到我的小站。想听听我在做什么，或跟我随便聊聊？</p>
+        </div>
+      </div>
+      <div class="badges">
+        <span class="badge">在读大学生</span>
+        <span class="badge">AI 应用</span>
+        <span class="badge">知识整理</span>
+        <span class="badge">性格谦和 · 外冷内热</span>
+      </div>
+    </section>
+
+    <!-- 个人信息展示区 -->
+    <section class="card">
+      <h2>个人信息</h2>
+      <div class="info-grid">
+        <div class="info-item">
+          <h3>最近在做什么</h3>
+          <p>学习用 AI 制作个人主页、日常课程学习、健身</p>
+        </div>
+        <div class="info-item">
+          <h3>兴趣</h3>
+          <div class="tag-list">
+            <span class="tag">羽毛球</span>
+            <span class="tag">模型制作</span>
+            <span class="tag">电脑游戏</span>
+          </div>
+        </div>
+        <div class="info-item">
+          <h3>擅长 / 关心</h3>
+          <div class="tag-list">
+            <span class="tag">内容表达</span>
+            <span class="tag">AI 应用</span>
+            <span class="tag">知识整理</span>
+          </div>
+        </div>
+        <div class="info-item">
+          <h3>联系我</h3>
+          <p>邮箱：<a href="mailto:byxdcy@163.com" style="color:var(--wine);text-decoration:none;">byxdcy@163.com</a></p>
+          <p style="margin-top:6px;">电话：<a href="tel:13501016997" style="color:var(--wine);text-decoration:none;">13501016997</a></p>
+          <p style="margin-top:6px;">微信：Z0807Heng</p>
+        </div>
+      </div>
+    </section>
+      </div><!-- /.col-left -->
+
+      <div class="col-right">
+    <!-- 数字分身聊天区 -->
+    <section class="card" id="chat">
+      <div class="chat-head">
+        <h2>数字分身 · 问我任何事</h2>
+        <span class="status"><span class="dot"></span>在线 · 欢迎来聊</span>
+      </div>
+      <div class="chips">
+        <button class="chip" data-q="你现在在做什么？">你现在在做什么？</button>
+        <button class="chip" data-q="你有哪些作品？">你有哪些作品？</button>
+        <button class="chip" data-q="怎么联系你？">怎么联系你？</button>
+      </div>
+      <div class="chat-box" id="chatBox"></div>
+      <form class="input-row" id="chatForm">
+        <input id="chatInput" type="text" placeholder="输入你的问题…" autocomplete="off" />
+        <button type="submit">发送</button>
+      </form>
+    </section>
+      </div><!-- /.col-right -->
+    </div><!-- /.columns -->
+
+    <!-- 作品展示 -->
+    <section class="card" id="works">
+      <h2>作品展示</h2>
+      <div class="works-grid">
+        <div class="work-card">
+          <span class="work-badge"><span class="dot"></span>AI 应用</span>
+          <div class="work-thumb">照片预留</div>
+          <p class="work-name">作品名称 <span class="ph">（待添加）</span></p>
+        </div>
+        <div class="work-card">
+          <span class="work-badge"><span class="dot"></span>个人项目</span>
+          <div class="work-thumb">照片预留</div>
+          <p class="work-name">作品名称 <span class="ph">（待添加）</span></p>
+        </div>
+        <div class="work-card">
+          <span class="work-badge"><span class="dot"></span>课程作品</span>
+          <div class="work-thumb">照片预留</div>
+          <p class="work-name">作品名称 <span class="ph">（待添加）</span></p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 留言板 -->
+    <section class="card" id="guestbook">
+      <h2>留言板</h2>
+      <form class="gb-form" id="gbForm">
+        <input id="gbName" type="text" maxlength="20" placeholder="你的昵称（可不填）" autocomplete="off" />
+        <textarea id="gbText" rows="2" maxlength="200" placeholder="写点什么吧…"></textarea>
+        <button type="submit">留下留言</button>
+      </form>
+      <div class="gb-list" id="gbList"></div>
+    </section>
+
+    <footer>Powered by 张小衡 · AI 数字分身原型 v0.2</footer>
+  </div>
+
+<script>
+  const KNOWLEDGE = {
+    identity: "我叫张小衡，是一名在读大学生，正在学习用 AI 做产品。",
+    doing: "我最近主要在搭自己的个人主页、学习课程，有空也会去健身。",
+    skills: "我比较擅长和关心内容表达、AI 应用、知识整理这几个方向。",
+    interests: "我平时喜欢打羽毛球、做模型，也爱玩电脑游戏。",
+    trait: "朋友们觉得我性格谦和，是那种外冷内热的人。",
+    contact: "你可以这样联系我：邮箱 byxdcy@163.com，电话 13501016997，微信 Z0807Heng。也欢迎继续问我其他问题。"
+  };
+
+  // 简单关键词规则对话
+  function reply(userText) {
+    const t = userText;
+    if (/(做什么|干嘛|最近|在忙|近况|学习)/.test(t)) return KNOWLEDGE.doing;
+    if (/(作品|项目|成果|做过|主页)/.test(t)) return "我目前还在搭建自己的第一个作品——这个个人主页，正在打磨中。等作品陆续整理好，我会在主页上放一个作品集。";
+    if (/(联系|怎么找到|微信|邮箱|联系我|方式)/.test(t)) return KNOWLEDGE.contact;
+    if (/(你是谁|名字|介绍|自我介绍)/.test(t)) return KNOWLEDGE.identity + " 我性格谦和，外冷内热，欢迎随便聊聊。";
+    if (/(兴趣|喜欢|爱好|喜欢什么)/.test(t)) return KNOWLEDGE.interests;
+    if (/(擅长|关心|方向|领域)/.test(t)) return KNOWLEDGE.skills;
+    if (/(一个人|性格|特点|印象)/.test(t)) return KNOWLEDGE.trait;
+    return "这个问题我还在学习怎么回答。你可以试着问问我「在做什么」「有哪些作品」或「怎么联系」，或者聊聊我的兴趣和擅长方向。";
+  }
+
+  const box = document.getElementById("chatBox");
+  const form = document.getElementById("chatForm");
+  const input = document.getElementById("chatInput");
+
+  function addMsg(who, text) {
+    const div = document.createElement("div");
+    div.className = "msg " + who;
+    const label = who === "user" ? "你" : "衡";
+    div.innerHTML = "<span class='who'>" + label + "</span>" +
+                    text.replace(/&/g, "&amp;").replace(/</g, "&lt;");
+    box.appendChild(div);
+    box.scrollTop = box.scrollHeight;
+  }
+
+  function botSay(text) {
+    setTimeout(() => addMsg("bot", text), 300);
+  }
+
+  function ask(q) {
+    addMsg("user", q);
+    botSay(reply(q));
+  }
+
+  form.addEventListener("submit", function (e) {
+    e.preventDefault();
+    const q = input.value.trim();
+    if (!q) return;
+    ask(q);
+    input.value = "";
+  });
+
+  // 快捷提问按钮
+  document.querySelectorAll(".chip").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      ask(btn.dataset.q);
+    });
+  });
+
+  // 开场问候
+  addMsg("bot", "你好！我是张小衡的数字分身。你可以问我最近在做什么、有什么作品、怎么联系我，或者随便聊聊～");
+
+  // ---------- 留言板（本地存储） ----------
+  const GB_KEY = "zhangxiaoheng_guestbook";
+  const gbForm = document.getElementById("gbForm");
+  const gbName = document.getElementById("gbName");
+  const gbText = document.getElementById("gbText");
+  const gbList = document.getElementById("gbList");
+
+  function escapeHtml(s) {
+    return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  }
+
+  function loadGB() {
+    try { return JSON.parse(localStorage.getItem(GB_KEY)) || []; }
+    catch (e) { return []; }
+  }
+  function saveGB(items) { localStorage.setItem(GB_KEY, JSON.stringify(items)); }
+
+  function renderGB() {
+    const items = loadGB();
+    gbList.innerHTML = "";
+    if (!items.length) {
+      gbList.innerHTML = '<div class="gb-empty">还没有留言，来抢沙发～</div>';
+      return;
+    }
+    items.slice().reverse().forEach(function (it) {
+      const name = it.name ? it.name : "匿名访客";
+      const time = new Date(it.time).toLocaleString("zh-CN", { hour12: false });
+      const div = document.createElement("div");
+      div.className = "gb-item";
+      div.innerHTML = "<div class='gb-meta'><span class='gb-name'>" + escapeHtml(name) +
+                      "</span><span>" + time + "</span></div><p>" + escapeHtml(it.text) + "</p>";
+      gbList.appendChild(div);
+    });
+  }
+
+  gbForm.addEventListener("submit", function (e) {
+    e.preventDefault();
+    const text = gbText.value.trim();
+    if (!text) return;
+    const items = loadGB();
+    items.push({ name: gbName.value.trim(), text: text, time: Date.now() });
+    saveGB(items);
+    gbName.value = "";
+    gbText.value = "";
+    renderGB();
+  });
+
+  // 左侧导航
+  document.querySelectorAll(".nav-btn").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      const target = btn.dataset.target;
+      if (target === "home") {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      } else {
+        const el = document.getElementById(target);
+        if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    });
+  });
+
+  renderGB();
+</script>
+</body>
+</html>
