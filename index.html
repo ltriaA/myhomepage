@@ -232,34 +232,9 @@
   }
   .work-name .ph { color: var(--muted); font-weight: 400; }
 
-  /* ---------- 留言板 ---------- */
-  .gb-form { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
-  .gb-form input,
-  .gb-form textarea {
-    width: 100%; padding: 10px 12px; font-size: 14px;
-    border: 1px solid var(--line); border-radius: 10px; outline: none;
-    background: #fff; color: var(--ink); font-family: inherit; resize: vertical;
-  }
-  .gb-form input:focus,
-  .gb-form textarea:focus { border-color: var(--wine); }
-  .gb-form button {
-    align-self: flex-end; padding: 9px 18px; font-size: 14px; font-weight: 600;
-    border: none; border-radius: 10px; background: var(--wine); color: #fff; cursor: pointer;
-    transition: background .15s;
-  }
-  .gb-form button:hover { background: var(--wine-dark); }
-  .gb-list { display: flex; flex-direction: column; gap: 12px; max-height: 240px; overflow-y: auto; }
-  .gb-item {
-    background: var(--cream); border: 1px solid var(--line);
-    border-radius: 12px; padding: 10px 14px;
-  }
-  .gb-item .gb-meta {
-    font-size: 12px; color: var(--muted);
-    display: flex; justify-content: space-between; gap: 10px; margin-bottom: 4px;
-  }
-  .gb-item .gb-name { color: var(--wine); font-weight: 600; }
-  .gb-item p { font-size: 14px; word-break: break-word; }
-  .gb-empty { text-align: center; color: var(--muted); font-size: 14px; padding: 16px 0; }
+    /* ---------- 留言板（giscus 适配酒红风格） ---------- */
+  .giscus { margin-top: 4px; }
+  .giscus-frame, .giscus-frame iframe { width: 100%; border: none; }
 
   /* ---------- 区块标题 ---------- */
   .card h2 {
@@ -542,12 +517,23 @@
     <!-- 留言板 -->
     <section class="card" id="guestbook">
       <h2>留言板</h2>
-      <form class="gb-form" id="gbForm">
-        <input id="gbName" type="text" maxlength="20" placeholder="你的昵称（可不填）" autocomplete="off" />
-        <textarea id="gbText" rows="2" maxlength="200" placeholder="写点什么吧…"></textarea>
-        <button type="submit">留下留言</button>
-      </form>
-      <div class="gb-list" id="gbList"></div>
+      <div class="giscus" id="giscus">
+        <script src="https://giscus.app/client.js"
+                data-repo="ltriaA/myhomepage"
+                data-repo-id="R_kgDOUe9arQ"
+                data-category="General"
+                data-category-id="DIC_kwDOUe9arc4DF3A_"
+                data-mapping="pathname"
+                data-strict="0"
+                data-reactions-enabled="1"
+                data-emit-metadata="0"
+                data-input-position="bottom"
+                data-theme="preferred_color_scheme"
+                data-lang="zh-CN"
+                crossorigin="anonymous"
+                async>
+        </script>
+      </div>
     </section>
 
     <footer>Powered by 张小衡 · AI 数字分身原型 v0.2</footer>
@@ -617,53 +603,6 @@
   // 开场问候
   addMsg("bot", "你好！我是张小衡的数字分身。你可以问我最近在做什么、有什么作品、怎么联系我，或者随便聊聊～");
 
-  // ---------- 留言板（本地存储） ----------
-  const GB_KEY = "zhangxiaoheng_guestbook";
-  const gbForm = document.getElementById("gbForm");
-  const gbName = document.getElementById("gbName");
-  const gbText = document.getElementById("gbText");
-  const gbList = document.getElementById("gbList");
-
-  function escapeHtml(s) {
-    return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-  }
-
-  function loadGB() {
-    try { return JSON.parse(localStorage.getItem(GB_KEY)) || []; }
-    catch (e) { return []; }
-  }
-  function saveGB(items) { localStorage.setItem(GB_KEY, JSON.stringify(items)); }
-
-  function renderGB() {
-    const items = loadGB();
-    gbList.innerHTML = "";
-    if (!items.length) {
-      gbList.innerHTML = '<div class="gb-empty">还没有留言，来抢沙发～</div>';
-      return;
-    }
-    items.slice().reverse().forEach(function (it) {
-      const name = it.name ? it.name : "匿名访客";
-      const time = new Date(it.time).toLocaleString("zh-CN", { hour12: false });
-      const div = document.createElement("div");
-      div.className = "gb-item";
-      div.innerHTML = "<div class='gb-meta'><span class='gb-name'>" + escapeHtml(name) +
-                      "</span><span>" + time + "</span></div><p>" + escapeHtml(it.text) + "</p>";
-      gbList.appendChild(div);
-    });
-  }
-
-  gbForm.addEventListener("submit", function (e) {
-    e.preventDefault();
-    const text = gbText.value.trim();
-    if (!text) return;
-    const items = loadGB();
-    items.push({ name: gbName.value.trim(), text: text, time: Date.now() });
-    saveGB(items);
-    gbName.value = "";
-    gbText.value = "";
-    renderGB();
-  });
-
   // 左侧导航
   document.querySelectorAll(".nav-btn").forEach(function (btn) {
     btn.addEventListener("click", function () {
@@ -677,7 +616,7 @@
     });
   });
 
-  renderGB();
+
 </script>
 </body>
 </html>
