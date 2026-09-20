@@ -537,7 +537,7 @@
     <!-- 留言板 -->
     <section class="card" id="guestbook">
       <h2>留言板</h2>
-      <p class="gb-tip">无需注册，填个昵称就能留言～</p>
+      <p class="gb-tip">私密留言箱：留言只有你和站长可见。留言绑定当前浏览器，换设备或清理缓存后无法找回历史留言。</p>
       <div id="gb-list"></div>
       <form id="gb-form" class="gb-form">
         <input id="gb-nick" type="text" placeholder="你的昵称（必填）" maxlength="40" autocomplete="off">
@@ -619,6 +619,22 @@
   const SUPABASE_URL = "https://mjfyfmiwegvsmhibfrir.supabase.co";
   const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1qZnlmbWl3ZWd2c21oaWJmcmlyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk5MDU2MTksImV4cCI6MjEwNTQ4MTYxOX0.L05VFzAwgp3praHCjH5i2LlQyPuAb6LxFmSTy1nZOOk";
 
+  // 设备标识：首次访问生成并存入 localStorage（隐私留言隔离用）
+  const DEVICE_KEY = "zhx_device_id";
+  function getDeviceId() {
+    let id = null;
+    try { id = localStorage.getItem(DEVICE_KEY); } catch (e) {}
+    if (!id) {
+      id = "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) {
+        const r = (Math.random() * 16) | 0;
+        const v = c === "x" ? r : (r & 0x3) | 0x8;
+        return v.toString(16);
+      });
+      try { localStorage.setItem(DEVICE_KEY, id); } catch (e) {}
+    }
+    return id;
+  }
+
   (function () {
     const listEl = document.getElementById("gb-list");
     const nickEl = document.getElementById("gb-nick");
@@ -662,6 +678,7 @@
       sb.from("comments")
         .select("id, created_at, nickname, content")
         .eq("url_id", urlId)
+        .eq("device_id", getDeviceId())
         .order("created_at", { ascending: false })
         .limit(100)
         .then(function (r) {
@@ -684,7 +701,8 @@
         content: content,
         url_id: location.pathname || "/",
         created_at: new Date().toISOString(),
-        status: "approved"
+        status: "approved",
+        device_id: getDeviceId()
       }).then(function (r) {
         submitBtn.disabled = false;
         if (r.error) { say("提交失败：" + r.error.message); return; }
@@ -696,7 +714,9 @@
     });
 
     if (window.supabase) {
-      sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+        global: { headers: { "x-device-id": getDeviceId() } }
+      });
       load();
     } else {
       say("留言组件加载失败，请刷新页面重试");
