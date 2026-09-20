@@ -232,9 +232,29 @@
   }
   .work-name .ph { color: var(--muted); font-weight: 400; }
 
-    /* ---------- 留言板（giscus 适配酒红风格） ---------- */
-  .giscus { margin-top: 4px; }
-  .giscus-frame, .giscus-frame iframe { width: 100%; border: none; }
+    /* ---------- 留言板（Supabase 免登录） ---------- */
+  .gb-tip { color: var(--muted); font-size: 13px; margin: 4px 0 12px; }
+  #gb-list { margin-bottom: 12px; }
+  .gb-empty { text-align: center; color: var(--muted); padding: 22px 0; font-size: 14px; }
+  .gb-item { border-left: 3px solid var(--wine); background: var(--cream); padding: 10px 12px; margin-bottom: 10px; border-radius: 6px; }
+  .gb-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px; gap: 10px; }
+  .gb-nick { font-weight: 600; color: var(--wine-dark); font-size: 14px; }
+  .gb-time { font-size: 12px; color: var(--muted); flex-shrink: 0; }
+  .gb-text { font-size: 14px; line-height: 1.6; word-break: break-word; color: var(--ink); }
+  .gb-form input, .gb-form textarea {
+    width: 100%; box-sizing: border-box; padding: 9px 12px; margin-bottom: 8px;
+    border: 1px solid var(--line); border-radius: 8px; background: #fff;
+    color: var(--ink); font-size: 14px; font-family: inherit; resize: vertical;
+  }
+  .gb-form input:focus, .gb-form textarea:focus { outline: none; border-color: var(--wine); }
+  .gb-form button {
+    background: var(--wine); color: #fff; border: none; padding: 9px 24px;
+    border-radius: 999px; font-size: 14px; cursor: pointer; transition: background .2s;
+  }
+  .gb-form button:hover { background: var(--wine-dark); }
+  .gb-form button:disabled { opacity: .6; cursor: not-allowed; }
+  .gb-status { margin-top: 8px; font-size: 13px; color: var(--muted); min-height: 18px; }
+  .gb-status.ok { color: var(--wine); }
 
   /* ---------- 区块标题 ---------- */
   .card h2 {
@@ -517,28 +537,20 @@
     <!-- 留言板 -->
     <section class="card" id="guestbook">
       <h2>留言板</h2>
-      <div class="giscus" id="giscus">
-        <script src="https://giscus.app/client.js"
-                data-repo="ltriaA/myhomepage"
-                data-repo-id="R_kgDOUe9arQ"
-                data-category="General"
-                data-category-id="DIC_kwDOUe9arc4DF3A_"
-                data-mapping="pathname"
-                data-strict="0"
-                data-reactions-enabled="1"
-                data-emit-metadata="0"
-                data-input-position="bottom"
-                data-theme="preferred_color_scheme"
-                data-lang="zh-CN"
-                crossorigin="anonymous"
-                async>
-        </script>
-      </div>
+      <p class="gb-tip">无需注册，填个昵称就能留言～</p>
+      <div id="gb-list"></div>
+      <form id="gb-form" class="gb-form">
+        <input id="gb-nick" type="text" placeholder="你的昵称（必填）" maxlength="40" autocomplete="off">
+        <textarea id="gb-content" placeholder="写下你的留言…（500 字以内）" maxlength="500" rows="3"></textarea>
+        <button type="submit" id="gb-submit">发表留言</button>
+      </form>
+      <div id="gb-status" class="gb-status"></div>
     </section>
 
     <footer>Powered by 张小衡 · AI 数字分身原型 v0.2</footer>
   </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script>
   const KNOWLEDGE = {
     identity: "我叫张小衡，是一名在读大学生，正在学习用 AI 做产品。",
@@ -602,6 +614,95 @@
 
   // 开场问候
   addMsg("bot", "你好！我是张小衡的数字分身。你可以问我最近在做什么、有什么作品、怎么联系我，或者随便聊聊～");
+
+  // ---------- 留言板（Supabase 免登录） ----------
+  const SUPABASE_URL = "https://mjfyfmiwegvsmhibfrir.supabase.co";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1qZnlmbWl3ZWd2c21oaWJmcmlyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk5MDU2MTksImV4cCI6MjEwNTQ4MTYxOX0.L05VFzAwgp3praHCjH5i2LlQyPuAb6LxFmSTy1nZOOk";
+
+  (function () {
+    const listEl = document.getElementById("gb-list");
+    const nickEl = document.getElementById("gb-nick");
+    const contentEl = document.getElementById("gb-content");
+    const statusEl = document.getElementById("gb-status");
+    const submitBtn = document.getElementById("gb-submit");
+    const form = document.getElementById("gb-form");
+    let sb = null, lastAt = 0;
+
+    function esc(s) {
+      const d = document.createElement("div");
+      d.textContent = s;
+      return d.innerHTML;
+    }
+
+    function say(msg, ok) {
+      statusEl.textContent = msg;
+      statusEl.className = "gb-status" + (ok ? " ok" : "");
+    }
+
+    function render(list) {
+      if (!list.length) {
+        listEl.innerHTML = '<div class="gb-empty">还没有留言，来抢沙发～</div>';
+        return;
+      }
+      listEl.innerHTML = list.map(function (m) {
+        const d = new Date(m.created_at);
+        const ts = d.toLocaleDateString("zh-CN") + " " +
+                  d.toLocaleTimeString("zh-CN", { hour12: false }).slice(0, 5);
+        return '<div class="gb-item">' +
+                 '<div class="gb-head"><span class="gb-nick">' + esc(m.nickname) + '</span>' +
+                 '<span class="gb-time">' + ts + '</span></div>' +
+                 '<div class="gb-text">' + esc(m.content).replace(/\n/g, "<br>") + '</div>' +
+               '</div>';
+      }).join("");
+    }
+
+    function load() {
+      if (!sb) return;
+      const urlId = location.pathname || "/";
+      sb.from("comments")
+        .select("id, created_at, nickname, content")
+        .eq("url_id", urlId)
+        .order("created_at", { ascending: false })
+        .limit(100)
+        .then(function (r) {
+          if (r.error) { say("留言加载失败：" + r.error.message); return; }
+          render(r.data || []);
+        });
+    }
+
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
+      const nick = nickEl.value.trim();
+      const content = contentEl.value.trim();
+      if (!nick) { say("请先填写昵称"); nickEl.focus(); return; }
+      if (!content) { say("留言内容不能为空"); contentEl.focus(); return; }
+      if (Date.now() - lastAt < 10000) { say("留言太频繁啦，稍等几秒再试～"); return; }
+      submitBtn.disabled = true;
+      say("正在提交…");
+      sb.from("comments").insert({
+        nickname: nick,
+        content: content,
+        url_id: location.pathname || "/",
+        created_at: new Date().toISOString(),
+        status: "approved"
+      }).then(function (r) {
+        submitBtn.disabled = false;
+        if (r.error) { say("提交失败：" + r.error.message); return; }
+        lastAt = Date.now();
+        contentEl.value = "";
+        say("留言成功！", true);
+        load();
+      });
+    });
+
+    if (window.supabase) {
+      sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      load();
+    } else {
+      say("留言组件加载失败，请刷新页面重试");
+    }
+  })();
+
 
   // 左侧导航
   document.querySelectorAll(".nav-btn").forEach(function (btn) {
