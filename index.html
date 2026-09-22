@@ -592,9 +592,38 @@
     setTimeout(() => addMsg("bot", text), 300);
   }
 
+  // 调用 AI（Supabase Edge Function -> 智谱 GLM），失败返回 null 由规则版兜底
+  function aiAsk(q, done) {
+    const ctrl = new AbortController();
+    const timer = setTimeout(function () { ctrl.abort(); }, 9000);
+    fetch(SUPABASE_URL + "/functions/v1/hello-world", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer " + SUPABASE_ANON_KEY
+      },
+      body: JSON.stringify({ query: q }),
+      signal: ctrl.signal
+    }).then(function (r) {
+      return r.json();
+    }).then(function (d) {
+      clearTimeout(timer);
+      done(d && d.reply ? d.reply : null);
+    }).catch(function () {
+      clearTimeout(timer);
+      done(null);
+    });
+  }
+
   function ask(q) {
     addMsg("user", q);
-    botSay(reply(q));
+    aiAsk(q, function (aiReply) {
+      if (aiReply) {
+        addMsg("bot", aiReply);
+      } else {
+        botSay(reply(q));
+      }
+    });
   }
 
   form.addEventListener("submit", function (e) {
