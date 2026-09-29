@@ -23,7 +23,11 @@
   body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
                  "Microsoft YaHei", sans-serif;
-    background: var(--cream);
+    background: linear-gradient(to top,
+                  rgba(196, 40, 40, 0.50) 0%,
+                  rgba(196, 40, 40, 0.24) 35%,
+                  rgba(196, 40, 40, 0.07) 70%,
+                  rgba(251, 247, 244, 1) 92%) fixed;
     color: var(--ink);
     line-height: 1.65;
     -webkit-font-smoothing: antialiased;
@@ -223,6 +227,14 @@
     color: var(--muted);
     font-size: 14px;
     letter-spacing: 2px;
+    overflow: hidden;
+  }
+  .work-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    border-radius: 12px;
   }
   .work-name {
     margin-top: 14px;
@@ -231,6 +243,18 @@
     color: var(--ink);
   }
   .work-name .ph { color: var(--muted); font-weight: 400; }
+  .work-link {
+    display: inline-block;
+    margin-top: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--wine);
+    text-decoration: none;
+    border-bottom: 1.5px dashed var(--wine-soft);
+    padding-bottom: 1px;
+    transition: color .15s, border-color .15s;
+  }
+  .work-link:hover { color: var(--wine-dark); border-bottom-color: var(--wine-dark); }
 
     /* ---------- 留言板（Supabase 免登录） ---------- */
   .gb-tip { color: var(--muted); font-size: 13px; margin: 4px 0 12px; }
@@ -518,8 +542,9 @@
       <div class="works-grid">
         <div class="work-card">
           <span class="work-badge"><span class="dot"></span>AI 应用</span>
-          <div class="work-thumb">照片预留</div>
-          <p class="work-name">作品名称 <span class="ph">（待添加）</span></p>
+          <div class="work-thumb"><img src="orange-cat.png" alt="橘猫桌宠"></div>
+          <p class="work-name">橘猫桌宠</p>
+          <a class="work-link" href="http://localhost:8017/desktop-pet-download/" target="_blank" rel="noopener">下载链接</a>
         </div>
         <div class="work-card">
           <span class="work-badge"><span class="dot"></span>个人项目</span>
