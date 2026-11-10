@@ -176,20 +176,49 @@
     el.className = "status" + (ok === true ? " ok" : ok === false ? " err" : "");
   }
 
-  async function api(method, body, query) {
-    const r = await fetch(ENDPOINT + (query || ""), {
-      method,
-      headers: {
-        "Content-Type": "application/json",
-        "apikey": SUPABASE_ANON_KEY,
-        "Authorization": "Bearer " + SUPABASE_ANON_KEY,
-        "x-admin-token": getToken()
-      },
-      body: body ? JSON.stringify(body) : undefined
-    });
-    const data = await r.json().catch(() => ({}));
-    if (!r.ok) throw new Error(data.error || ("HTTP " + r.status));
-    return data;
+  // 边界函数刚部署/冷启动时可能短暂不可达，这里做有限重试
+  async function api(method, body, query, retries) {
+    if (retries == null) retries = 2;
+    const payload = body ? JSON.stringify(body) : undefined;
+    let lastErr = null;
+
+    for (let attempt = 0; attempt <= retries; attempt++) {
+      const ctrl = new AbortController();
+      const timer = setTimeout(function () { ctrl.abort(); }, 90000);
+      try {
+        const r = await fetch(ENDPOINT + (query || ""), {
+          method,
+          headers: {
+            "Content-Type": "application/json",
+            "apikey": SUPABASE_ANON_KEY,
+            "Authorization": "Bearer " + SUPABASE_ANON_KEY,
+            "x-admin-token": getToken()
+          },
+          body: payload,
+          signal: ctrl.signal
+        });
+        clearTimeout(timer);
+        const data = await r.json().catch(function () { return {}; });
+        if (!r.ok) {
+          // 4xx 属于请求本身有问题，重试无意义
+          if (r.status >= 400 && r.status < 500) {
+            throw new Error(data.error || ("HTTP " + r.status));
+          }
+          throw new Error(data.error || ("HTTP " + r.status));
+        }
+        return data;
+      } catch (e) {
+        clearTimeout(timer);
+        lastErr = e;
+        const msg = String(e && e.message || e);
+        // 口令错误 / 4xx 不重试
+        if (msg.indexOf("口令") !== -1 || /^HTTP 4/.test(msg)) throw e;
+        if (attempt < retries) {
+          await new Promise(function (res) { setTimeout(res, 900 * (attempt + 1)); });
+        }
+      }
+    }
+    throw lastErr || new Error("网络不可达");
   }
 
   function esc(s) {
@@ -313,8 +342,16 @@
     }
     $("bulkBtn").disabled = true;
     try {
-      const res = await api("POST", { items: items });
-      say($("bulkStatus"), "成功导入 " + (res.inserted || items.length) + " 条", true);
+      // 分批提交：单批 50 条，避免大请求体和单点失败
+      const BATCH = 50;
+      let inserted = 0;
+      for (let i = 0; i < items.length; i += BATCH) {
+        const chunk = items.slice(i, i + BATCH);
+        say($("bulkStatus"), "导入中… " + inserted + "/" + items.length);
+        const res = await api("POST", { items: chunk });
+        inserted += (res && res.inserted) || chunk.length;
+      }
+      say($("bulkStatus"), "成功导入 " + inserted + " 条", true);
       $("bulk").value = "";
       if (kind !== currentKind) {
         currentKind = kind;
@@ -324,7 +361,10 @@
       }
       loadList();
     } catch (e) {
-      say($("bulkStatus"), "导入失败：" + e.message, false);
+      const msg = String(e && e.message || e);
+      say($("bulkStatus"), msg === "Failed to fetch"
+        ? "导入失败：网络请求未送达，请检查网络后重试（已自动重试 2 次）"
+        : "导入失败：" + msg, false);
     }
     $("bulkBtn").disabled = false;
   });
